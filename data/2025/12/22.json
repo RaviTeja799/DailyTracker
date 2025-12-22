@@ -1,0 +1,33 @@
+{
+  "date": "2025-12-22",
+  "tasks": [
+    {
+      "id": "exercise",
+      "category": "Exercise",
+      "type": "toggle",
+      "value": true,
+      "updatedAt": "2025-12-22T12:30:16.392Z"
+    },
+    {
+      "id": "dsa",
+      "category": "DSA",
+      "type": "topic",
+      "topic": "",
+      "done": false,
+      "updatedAt": "2025-12-22T12:30:16.391Z"
+    },
+    {
+      "id": "cybersecurity",
+      "category": "Cyber Security",
+      "type": "topic",
+      "topic": "",
+      "done": false,
+      "updatedAt": "2025-12-22T12:30:16.391Z"
+    }
+  ],
+  "commitCount": 1,
+  "metadata": {
+    "createdAt": "2025-12-22T12:30:16.391Z",
+    "lastUpdatedAt": "2025-12-22T12:30:16.394Z"
+  }
+}
