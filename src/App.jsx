@@ -85,9 +85,15 @@ const App = () => {
         const firstDay = new Date(year, month, 1);
         const lastDay = new Date(year, month + 1, 0);
 
+        const startDate = new Date(2025, 11, 22); // Dec 22, 2025
+        const endDate = new Date(2026, 3, 22);    // Apr 22, 2026
+
         const dates = [];
         for (let d = new Date(firstDay); d <= lastDay; d.setDate(d.getDate() + 1)) {
-            dates.push(new Date(d));
+            const current = new Date(d);
+            if (current >= startDate && current <= endDate) {
+                dates.push(current);
+            }
         }
         return dates;
     }, [currentMonth]);
