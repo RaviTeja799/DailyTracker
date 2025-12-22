@@ -1,26 +1,17 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import {
-    CheckCircle2,
-    Circle,
-    Calendar as CalendarIcon,
-    Trophy,
-    Clock,
-    Dumbbell,
-    BookOpen,
-    ShieldCheck,
     ChevronLeft,
     ChevronRight,
-    TrendingUp,
-    GitCommit
 } from 'lucide-react';
 
 const APP_ID = 'daily-tracker-git';
 
-{ id: 'dsa', label: 'DSA Practice', weight: 2, icon: BookOpen, color: 'text-blue-600' },
-{ id: 'college', label: 'College & Gateway', weight: 1, icon: BookOpen, color: 'text-slate-600' },
-{ id: 'dev', label: 'Development & GSoC', weight: 2, icon: GitCommit, color: 'text-indigo-600' },
-{ id: 'gate', label: 'GATE Core Study', weight: 2, icon: ShieldCheck, color: 'text-purple-600' },
-{ id: 'revision', label: 'Revision & Aptitude', weight: 1, icon: Clock, color: 'text-amber-600' },
+const TASKS = [
+    { id: 'dsa', label: 'DSA Practice', weight: 2, icon: BookOpen, color: 'text-blue-600' },
+    { id: 'college', label: 'College & Gateway', weight: 1, icon: BookOpen, color: 'text-slate-600' },
+    { id: 'dev', label: 'Development & GSoC', weight: 2, icon: GitCommit, color: 'text-indigo-600' },
+    { id: 'gate', label: 'GATE Core Study', weight: 2, icon: ShieldCheck, color: 'text-purple-600' },
+    { id: 'revision', label: 'Revision & Aptitude', weight: 1, icon: Clock, color: 'text-amber-600' },
 ];
 
 const TIPS = [
@@ -171,6 +162,13 @@ const App = () => {
     const navigateMonth = (direction) => {
         const newMonth = new Date(currentMonth);
         newMonth.setMonth(newMonth.getMonth() + direction);
+
+        // Limit navigation (Dec 2025 - Apr 2026)
+        const minDate = new Date(2025, 11, 1);
+        const maxDate = new Date(2026, 3, 1);
+
+        if (newMonth < minDate || newMonth > maxDate) return;
+
         setCurrentMonth(newMonth);
     };
 
@@ -207,26 +205,18 @@ const App = () => {
                     <StatCard
                         label="Consistency Score"
                         value={`${globalStats.percentage}%`}
-                        icon={TrendingUp}
-                        color="text-indigo-600"
                     />
                     <StatCard
                         label="Perfect Days"
                         value={globalStats.perfectDays}
-                        icon={Trophy}
-                        color="text-amber-500"
                     />
                     <StatCard
                         label="Today's Commits"
                         value={commitCount}
-                        icon={GitCommit}
-                        color="text-emerald-600"
                     />
                     <StatCard
                         label="Month Score"
                         value={`${globalStats.currentScore}/${globalStats.maxScore}`}
-                        icon={CheckCircle2}
-                        color="text-rose-500"
                     />
                 </div>
 
@@ -259,15 +249,15 @@ const App = () => {
                                         <th className="p-4 border-b font-bold text-slate-600 text-xs uppercase">Date</th>
                                         {TASKS.map(task => (
                                             <th key={task.id} className="p-4 border-b font-bold text-slate-600 text-xs uppercase text-center">
-                                                <div className="flex flex-col items-center gap-1">
-                                                    <task.icon className={`w-4 h-4 ${task.color}`} />
-                                                    <span className="hidden md:inline">{task.label}</span>
-                                                    <span className="md:hidden">{task.id.toUpperCase().slice(0, 3)}</span>
-                                                </div>
-                                            </th>
+                                                <th key={task.id} className="p-4 border-b font-bold text-slate-600 text-xs uppercase text-center">
+                                                    <div className="flex flex-col items-center gap-1">
+                                                        <span className="hidden md:inline">{task.label}</span>
+                                                        <span className="md:hidden">{task.id.toUpperCase().slice(0, 3)}</span>
+                                                    </div>
+                                                </th>
                                         ))}
-                                        <th className="p-4 border-b font-bold text-slate-600 text-xs uppercase text-center">Score</th>
-                                    </tr>
+                                                <th className="p-4 border-b font-bold text-slate-600 text-xs uppercase text-center">Score</th>
+                                            </tr>
                                 </thead>
                                 <tbody>
                                     {monthDates.map(date => {
@@ -277,11 +267,16 @@ const App = () => {
                                         const isWeekend = date.getDay() === 0 || date.getDay() === 6;
                                         const isToday = formatDateKey(new Date()) === key;
 
+                                        const startDate = new Date(2025, 11, 22); // Dec 22, 2025
+                                        const endDate = new Date(2026, 3, 22);    // Apr 22, 2026
+                                        const isOutOfRange = date < startDate || date > endDate;
+
                                         return (
                                             <tr
                                                 key={key}
-                                                className={`border-b transition-colors ${isToday ? 'bg-indigo-50/50' :
-                                                    isWeekend ? 'bg-amber-50/20' : 'hover:bg-slate-50'
+                                                className={`border-b transition-colors ${isOutOfRange ? 'opacity-30 pointer-events-none bg-slate-100' :
+                                                    isToday ? 'bg-indigo-50/50' :
+                                                        isWeekend ? 'bg-amber-50/20' : 'hover:bg-slate-50'
                                                     }`}
                                             >
                                                 <td className="p-4 font-bold text-slate-500 text-sm">
@@ -291,6 +286,7 @@ const App = () => {
                                                 {TASKS.map(task => (
                                                     <td key={task.id} className="p-2 text-center">
                                                         <button
+                                                            disabled={isOutOfRange}
                                                             onClick={() => toggleTask(key, task.id)}
                                                             className={`w-12 h-12 rounded-lg flex items-center justify-center transition-all shadow-sm border font-black text-lg ${dayData[task.id] === 1
                                                                 ? 'bg-indigo-600 text-white border-indigo-700'
@@ -321,9 +317,9 @@ const App = () => {
                 ) : (
                     <div className="grid md:grid-cols-2 gap-6">
                         {/* Schedule View */}
-                        <div className="bg-white p-6 rounded-2xl shadow-lg border border-slate-200 md:col-span-2">
-                            <h3 className="text-xl font-bold mb-6 flex items-center gap-2 text-slate-800">
-                                <Clock className="text-indigo-600" /> Daily Schedule
+                        <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200 md:col-span-2">
+                            <h3 className="text-lg font-bold mb-6 text-slate-800 border-b pb-2">
+                                DAILY SCHEDULE
                             </h3>
                             <div className="overflow-x-auto">
                                 <table className="w-full text-left text-sm border-collapse">
@@ -348,14 +344,13 @@ const App = () => {
                         </div>
 
                         {/* Task Scoring Rules */}
-                        <div className="bg-white p-6 rounded-2xl shadow-lg border border-slate-200">
-                            <h3 className="text-xl font-bold mb-6 flex items-center gap-2">
-                                <BookOpen className="text-indigo-600" /> Scoring Criteria
+                        <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+                            <h3 className="text-lg font-bold mb-6 text-slate-800 border-b pb-2">
+                                SCORING CRITERIA
                             </h3>
                             <div className="space-y-4">
                                 {TASKS.map(task => (
                                     <div key={task.id} className="flex items-start gap-4 p-3 rounded-lg border border-slate-100">
-                                        <task.icon className={`w-5 h-5 ${task.color} mt-1`} />
                                         <div className="flex-1">
                                             <p className="font-bold text-slate-700">{task.label}</p>
                                             <p className="text-sm text-slate-500">Weight: {task.weight} point{task.weight > 1 ? 's' : ''}</p>
@@ -372,9 +367,9 @@ const App = () => {
 
                         {/* Tips & Insights */}
                         <div className="space-y-6">
-                            <div className="bg-slate-800 p-6 rounded-2xl shadow-lg text-white">
-                                <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
-                                    <GitCommit className="text-white" /> Commit Tracking
+                            <div className="bg-slate-800 p-6 rounded-xl shadow-sm text-white">
+                                <h3 className="text-lg font-bold mb-4 text-white border-b border-slate-700 pb-2">
+                                    COMMIT TRACKING
                                 </h3>
                                 <p className="text-slate-300 mb-4">
                                     Every task completion triggers an automated Git commit.
@@ -387,8 +382,8 @@ const App = () => {
                                 </div>
                             </div>
 
-                            <div className="bg-white p-6 rounded-2xl shadow-lg border border-slate-200">
-                                <h3 className="text-xl font-bold mb-4 text-slate-800">Strategic Reminders</h3>
+                            <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+                                <h3 className="text-lg font-bold mb-4 text-slate-800 border-b pb-2">STRATEGIC REMINDERS</h3>
                                 <ul className="space-y-3">
                                     {TIPS.map((tip, i) => (
                                         <li key={i} className="flex items-start gap-2 text-sm text-slate-600">
@@ -411,14 +406,11 @@ const App = () => {
     );
 };
 
-const StatCard = ({ label, value, icon: Icon, color }) => (
-    <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex items-center gap-4">
-        <div className={`p-2 rounded-lg bg-slate-50 ${color}`}>
-            <Icon className="w-5 h-5" />
-        </div>
+const StatCard = ({ label, value }) => (
+    <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-200">
         <div>
-            <p className="text-xs font-bold text-slate-400 uppercase tracking-tight">{label}</p>
-            <p className="text-xl font-black text-slate-800">{value}</p>
+            <p className="text-xs font-bold text-slate-400 uppercase tracking-tight mb-1">{label}</p>
+            <p className="text-2xl font-black text-slate-800">{value}</p>
         </div>
     </div>
 );
