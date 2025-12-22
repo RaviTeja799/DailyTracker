@@ -249,10 +249,8 @@ const App = () => {
                                         <th className="p-4 border-b font-bold text-slate-600 text-xs uppercase">Date</th>
                                         {TASKS.map(task => (
                                             <th key={task.id} className="p-4 border-b font-bold text-slate-600 text-xs uppercase text-center">
-                                                <div className="flex flex-col items-center gap-1">
-                                                    <span className="hidden md:inline">{task.label}</span>
-                                                    <span className="md:hidden">{task.id.toUpperCase().slice(0, 3)}</span>
-                                                </div>
+                                                <span className="hidden md:inline">{task.label}</span>
+                                                <span className="md:hidden">{task.id.toUpperCase().slice(0, 3)}</span>
                                             </th>
                                         ))}
                                         <th className="p-4 border-b font-bold text-slate-600 text-xs uppercase text-center">Score</th>
@@ -287,7 +285,7 @@ const App = () => {
                                                         <button
                                                             disabled={isOutOfRange}
                                                             onClick={() => toggleTask(key, task.id)}
-                                                            className={`w-12 h-12 rounded-lg flex items-center justify-center transition-all shadow-sm border font-black text-lg ${dayData[task.id] === 1
+                                                            className={`w-12 h-12 rounded-lg flex items-center justify-center transition-all shadow-sm border font-black text-lg mx-auto ${dayData[task.id] === 1
                                                                 ? 'bg-indigo-600 text-white border-indigo-700'
                                                                 : 'bg-white text-slate-300 border-slate-200 hover:border-slate-300'
                                                                 }`}
