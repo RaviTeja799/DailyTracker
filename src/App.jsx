@@ -7,11 +7,13 @@ import {
 const APP_ID = 'daily-tracker-git';
 
 const TASKS = [
-    { id: 'dsa', label: 'DSA Practice', weight: 2 },
-    { id: 'college', label: 'College & Gateway', weight: 1 },
-    { id: 'dev', label: 'Development & GSoC', weight: 2 },
-    { id: 'gate', label: 'GATE Core Study', weight: 2 },
-    { id: 'revision', label: 'Revision & Aptitude', weight: 1 },
+    { id: 'dsa', label: 'Golden Hour (DSA)', weight: 2 },
+    { id: 'commute_morning', label: 'Commute (Audio)', weight: 1 },
+    { id: 'college', label: 'College', weight: 1 },
+    { id: 'commute_home', label: 'Commute (Home)', weight: 1 },
+    { id: 'dev', label: 'Builder Slot (Dev)', weight: 2 },
+    { id: 'gate', label: 'GATE Core', weight: 2 },
+    { id: 'revision', label: 'Revision', weight: 1 },
 ];
 
 const TIPS = [
@@ -23,20 +25,20 @@ const TIPS = [
 ];
 
 const SCHEDULE = [
-    { time: "05:30 AM", activity: "Wake Up", details: "No snooze. Head start." },
-    { time: "05:45 AM - 06:45 AM", activity: "DSA Practice", details: "Data Structures (Java). Arrays/Linked Lists." },
-    { time: "07:00 AM - 08:00 AM", activity: "Routine", details: "Bath, Breakfast, Leave by 8:00 AM." },
-    { time: "08:00 AM - 08:40 AM", activity: "Commute", details: "Audio Learning: System Design or Network Security." },
-    { time: "08:40 AM - 03:20 PM", activity: "College", details: "Solve GATE PYQs. Code Web Tech assignments." },
-    { time: "03:20 PM - 04:30 PM", activity: "Commute Home", details: "Decompress. Switch off college mode." },
-    { time: "04:30 PM - 05:30 PM", activity: "Refresh", details: "Snacks. Phone rules: 15 mins max." },
-    { time: "05:30 PM - 07:00 PM", activity: "Development", details: "Java Backend. Spring Boot. GSoC Prep." },
-    { time: "07:00 PM - 07:15 PM", activity: "Break", details: "Walk. No screens." },
-    { time: "07:15 PM - 08:45 PM", activity: "GATE Core", details: "Network Security & Compiler Design + PYQs." },
-    { time: "08:45 PM - 09:30 PM", activity: "Dinner", details: "Light meal. Socialize." },
-    { time: "09:30 PM - 10:15 PM", activity: "Revision", details: "GATE Aptitude OR DSA Revision." },
-    { time: "10:15 PM", activity: "Shutdown", details: "No screens." },
-    { time: "10:30 PM", activity: "Sleep", details: "Non-negotiable." },
+    { time: "05:30 AM", activity: "Wake Up", details: "No snooze. You need this head start to beat the inconsistency." },
+    { time: "05:45 AM - 06:45 AM", activity: "☕ The Golden Hour (DSA)", details: "Subject: Data Structures (Java). Task: Striver A2Z Sheet. Arrays/Linked Lists. Why: Your brain is fresh. Do the hardest thing first." },
+    { time: "07:00 AM - 08:00 AM", activity: "Chores & Ready", details: "Bath, Breakfast, Pack bag. Leave home at 8:00 AM sharp." },
+    { time: "08:00 AM - 08:40 AM", activity: "Commute", details: "Audio Learning: Listen to a podcast on System Design or review Network Security concepts mentally." },
+    { time: "08:40 AM - 03:20 PM", activity: "🏫 College (The Battlefield)", details: "Strategy: Do not be a passive student. • Boring Lectures: Solve GATE PYQs for Compiler Design or Network Security .+1 • Labs: Code your Web Tech assignments (Servlets/JSP). Don't copy. Build them." },
+    { time: "03:20 PM - 04:30 PM", activity: "Commute Home", details: "Decompress. Listen to music. Switch off \"College Mode.\"" },
+    { time: "04:30 PM - 05:30 PM", activity: "Refresh & Reset", details: "Snacks. Shower if needed. Phone rules: No Reels. 15 mins max for messages." },
+    { time: "05:30 PM - 07:00 PM", activity: "💻 The Builder Slot (Dev)", details: "Subject: Web Technologies / GSoC Prep. Focus: Java Backend (Spring Boot / Servlets). Task: Work on your Student Management System or browse Checkstyle/Honeynet issues." },
+    { time: "07:00 PM - 07:15 PM", activity: "Break", details: "Walk around the house. No screens." },
+    { time: "07:15 PM - 08:45 PM", activity: "📚 GATE Core (The Rank)", details: "Subjects: Network Security & Compiler Design. +1 Task: Study one concept (e.g., RSA Algorithm, Parsing) and solve 10 PYQs." },
+    { time: "08:45 PM - 09:30 PM", activity: "Dinner & Family", details: "Eat light (no heavy rice). Talk to humans." },
+    { time: "09:30 PM - 10:15 PM", activity: "🔄 Revision & Aptitude", details: "Task: 30 mins of GATE Aptitude OR Revise the DSA problem you solved at 5:45 AM. Why: Spaced repetition stops you from forgetting." },
+    { time: "10:15 PM", activity: "The Lockdown", details: "Phone away. Laptop closed." },
+    { time: "10:30 PM", activity: "Sleep", details: "Non-negotiable. If you don't sleep now, you miss the 5:30 AM slot, and the cycle fails." },
 ];
 
 const formatDateKey = (date) => {
@@ -60,8 +62,25 @@ const App = () => {
         }
 
         // Get commit count from API
+        // Get commit count from API
         fetchCommitCount();
+
+        // Load plans
+        const savedPlans = localStorage.getItem('daily-tracker-plans');
+        if (savedPlans) {
+            setPlans(JSON.parse(savedPlans));
+        }
     }, []);
+
+    const [plans, setPlans] = useState({});
+    const [showPlanningModal, setShowPlanningModal] = useState(false);
+
+    const savePlan = (dateKey, planData) => {
+        const updatedPlans = { ...plans, [dateKey]: planData };
+        setPlans(updatedPlans);
+        localStorage.setItem('daily-tracker-plans', JSON.stringify(updatedPlans));
+        setShowPlanningModal(false);
+    };
 
     const fetchCommitCount = async () => {
         try {
@@ -202,8 +221,34 @@ const App = () => {
                     >
                         Insights
                     </button>
+                    <button
+                        onClick={() => setShowPlanningModal(true)}
+                        className="px-4 py-2 rounded-lg text-sm font-bold text-indigo-600 hover:bg-indigo-50 transition-all border-l ml-1"
+                    >
+                        Plan Tomorrow
+                    </button>
                 </div>
             </header>
+
+            {plans[formatDateKey(new Date())] && (
+                <div className="max-w-6xl mx-auto mb-6 bg-indigo-50 p-6 rounded-2xl border border-indigo-100">
+                    <h3 className="text-lg font-bold text-indigo-900 mb-4">🎯 TODAY'S MISSION</h3>
+                    <div className="grid md:grid-cols-3 gap-6">
+                        <div className="bg-white p-4 rounded-xl shadow-sm">
+                            <p className="text-xs font-bold text-indigo-400 uppercase mb-1">DSA Focus</p>
+                            <p className="font-medium text-slate-800">{plans[formatDateKey(new Date())].dsa || 'No specific plan'}</p>
+                        </div>
+                        <div className="bg-white p-4 rounded-xl shadow-sm">
+                            <p className="text-xs font-bold text-indigo-400 uppercase mb-1">Dev Focus</p>
+                            <p className="font-medium text-slate-800">{plans[formatDateKey(new Date())].dev || 'No specific plan'}</p>
+                        </div>
+                        <div className="bg-white p-4 rounded-xl shadow-sm">
+                            <p className="text-xs font-bold text-indigo-400 uppercase mb-1">GATE Focus</p>
+                            <p className="font-medium text-slate-800">{plans[formatDateKey(new Date())].gate || 'No specific plan'}</p>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             <main className="max-w-6xl mx-auto space-y-6">
                 {/* Quick Stats Bar */}
@@ -405,6 +450,107 @@ const App = () => {
             <footer className="max-w-6xl mx-auto mt-8 text-center text-slate-400 text-xs">
                 <p>Progress is saved locally in your browser and committed to Git automatically.</p>
             </footer>
+
+            {showPlanningModal && (
+                <PlanningModal
+                    onClose={() => setShowPlanningModal(false)}
+                    onSave={savePlan}
+                />
+            )}
+        </div>
+    );
+};
+
+const PlanningModal = ({ onClose, onSave }) => {
+    // Calculate tomorrow's date
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+
+    const year = tomorrow.getFullYear();
+    const month = String(tomorrow.getMonth() + 1).padStart(2, '0');
+    const day = String(tomorrow.getDate()).padStart(2, '0');
+    const dateKey = `${year}-${month}-${day}`;
+    const displayDate = tomorrow.toLocaleDateString('default', { weekday: 'long', month: 'long', day: 'numeric' });
+
+    const [dsa, setDsa] = useState('');
+    const [dev, setDev] = useState('');
+    const [gate, setGate] = useState('');
+
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        onSave(dateKey, { dsa, dev, gate });
+    };
+
+    return (
+        <div className="fixed inset-0 bg-slate-900/50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full p-6 animate-in slide-in-from-bottom-4">
+                <div className="flex justify-between items-center mb-6">
+                    <div>
+                        <h2 className="text-2xl font-bold text-slate-800">Plan for Tomorrow</h2>
+                        <p className="text-slate-500 font-medium">{displayDate}</p>
+                    </div>
+                    <button onClick={onClose} className="p-2 hover:bg-slate-100 rounded-full transition-colors">
+                        <span className="text-2xl">&times;</span>
+                    </button>
+                </div>
+
+                <form onSubmit={handleSubmit} className="space-y-4">
+                    <div>
+                        <label className="block text-sm font-bold text-slate-700 mb-1">
+                            ☕ The Golden Hour (DSA) <span className="text-slate-400 font-normal ml-1">(05:45 AM - 06:45 AM)</span>
+                        </label>
+                        <input
+                            type="text"
+                            value={dsa}
+                            onChange={e => setDsa(e.target.value)}
+                            placeholder="e.g. Arrays, Linked Lists, Striver Sheet..."
+                            className="w-full p-3 border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all"
+                            autoFocus
+                        />
+                    </div>
+
+                    <div>
+                        <label className="block text-sm font-bold text-slate-700 mb-1">
+                            💻 The Builder Slot (Dev) <span className="text-slate-400 font-normal ml-1">(05:30 PM - 07:00 PM)</span>
+                        </label>
+                        <textarea
+                            value={dev}
+                            onChange={e => setDev(e.target.value)}
+                            placeholder="e.g. Spring Boot setup, Student Mgmt System..."
+                            className="w-full p-3 border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all h-24 resize-none"
+                        />
+                    </div>
+
+                    <div>
+                        <label className="block text-sm font-bold text-slate-700 mb-1">
+                            📚 GATE Core (The Rank) <span className="text-slate-400 font-normal ml-1">(07:15 PM - 08:45 PM)</span>
+                        </label>
+                        <input
+                            type="text"
+                            value={gate}
+                            onChange={e => setGate(e.target.value)}
+                            placeholder="e.g. Network Security, RSA Algorithm..."
+                            className="w-full p-3 border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all"
+                        />
+                    </div>
+
+                    <div className="pt-4 flex gap-3">
+                        <button
+                            type="button"
+                            onClick={onClose}
+                            className="flex-1 py-3 bg-slate-100 text-slate-700 font-bold rounded-xl hover:bg-slate-200 transition-colors"
+                        >
+                            Cancel
+                        </button>
+                        <button
+                            type="submit"
+                            className="flex-1 py-3 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 shadow-lg shadow-indigo-200 transition-all"
+                        >
+                            Commit Plan
+                        </button>
+                    </div>
+                </form>
+            </div>
         </div>
     );
 };
