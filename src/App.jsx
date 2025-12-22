@@ -7,13 +7,13 @@ import {
 const APP_ID = 'daily-tracker-git';
 
 const TASKS = [
-    { id: 'dsa', label: 'Golden Hour (DSA)', weight: 2 },
-    { id: 'commute_morning', label: 'Commute (Audio)', weight: 1 },
-    { id: 'college', label: 'College', weight: 1 },
-    { id: 'commute_home', label: 'Commute (Home)', weight: 1 },
-    { id: 'dev', label: 'Builder Slot (Dev)', weight: 2 },
-    { id: 'gate', label: 'GATE Core', weight: 2 },
-    { id: 'revision', label: 'Revision', weight: 1 },
+    { id: 'dsa', label: 'Golden Hour (DSA)', weight: 2, time: '05:45 AM - 06:45 AM' },
+    { id: 'commute_morning', label: 'Commute (Audio)', weight: 1, time: '08:00 AM - 08:40 AM' },
+    { id: 'college', label: 'College', weight: 1, time: '08:40 AM - 03:20 PM' },
+    { id: 'commute_home', label: 'Commute (Home)', weight: 1, time: '03:20 PM - 04:30 PM' },
+    { id: 'dev', label: 'Builder Slot (Dev)', weight: 2, time: '05:30 PM - 07:00 PM' },
+    { id: 'gate', label: 'GATE Core', weight: 2, time: '07:15 PM - 08:45 PM' },
+    { id: 'revision', label: 'Revision', weight: 1, time: '09:30 PM - 10:15 PM' },
 ];
 
 const TIPS = [
@@ -74,6 +74,8 @@ const App = () => {
 
     const [plans, setPlans] = useState({});
     const [showPlanningModal, setShowPlanningModal] = useState(false);
+    const [pushModal, setPushModal] = useState({ show: false, date: null });
+    const [isPushing, setIsPushing] = useState(false);
 
     const savePlan = (dateKey, planData) => {
         const updatedPlans = { ...plans, [dateKey]: planData };
@@ -117,7 +119,7 @@ const App = () => {
         return dates;
     }, [currentMonth]);
 
-    const toggleTask = async (dateKey, taskId) => {
+    const toggleTask = (dateKey, taskId) => {
         const dayData = data[dateKey] || {};
         const newValue = dayData[taskId] === 1 ? 0 : 1;
 
@@ -128,29 +130,38 @@ const App = () => {
 
         const updatedData = { ...data, [dateKey]: updatedDay };
         saveToLocal(updatedData);
+    };
 
-        // Send to backend to create Git commit
+    const handlePushClick = (dateKey) => {
+        setPushModal({ show: true, date: dateKey });
+    };
+
+    const confirmPush = async () => {
+        if (!pushModal.date) return;
+
+        setIsPushing(true);
         try {
-            const taskLabel = TASKS.find(t => t.id === taskId)?.label || taskId;
-            const score = getDayScore(dateKey, updatedData);
-            const maxScore = maxPossibleDayScore;
+            const dateKey = pushModal.date;
+            const dayData = data[dateKey] || {};
 
-            await fetch('/api/update', {
+            await fetch('/api/push-day', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     date: dateKey,
-                    taskId,
-                    value: newValue,
-                    action: newValue === 1 ? `${taskLabel} completed` : `${taskLabel} unchecked`,
-                    details: `${dateKey}: ${taskLabel} = ${newValue} (Score: ${score}/${maxScore})`
+                    data: dayData
                 })
             });
 
             // Update commit count
             fetchCommitCount();
+            setPushModal({ show: false, date: null });
+            alert('✅ Successfully pushed to GitHub!');
         } catch (error) {
-            console.error('Error creating Git commit:', error);
+            console.error('Error pushing to GitHub:', error);
+            alert('❌ Failed to push to GitHub');
+        } finally {
+            setIsPushing(false);
         }
     };
 
@@ -297,14 +308,17 @@ const App = () => {
                             <table className="w-full text-left border-collapse">
                                 <thead>
                                     <tr className="bg-slate-100/50">
-                                        <th className="p-4 border-b font-bold text-slate-600 text-xs uppercase">Date</th>
+                                        <th className="p-3 border-b font-bold text-slate-600 text-xs uppercase min-w-[100px]">Date</th>
                                         {TASKS.map(task => (
-                                            <th key={task.id} className="p-4 border-b font-bold text-slate-600 text-xs uppercase text-center">
-                                                <span className="hidden md:inline">{task.label}</span>
-                                                <span className="md:hidden">{task.id.toUpperCase().slice(0, 3)}</span>
+                                            <th key={task.id} className="p-3 border-b font-bold text-slate-600 text-xs uppercase text-center align-bottom">
+                                                <div className="flex flex-col items-center gap-1.5 pb-1">
+                                                    <span className="hidden md:inline text-slate-700 tracking-tight leading-tight">{task.label}</span>
+                                                    <span className="md:hidden">{task.id.toUpperCase().slice(0, 3)}</span>
+                                                    <span className="text-[10px] text-indigo-500 font-medium normal-case tracking-wide whitespace-nowrap bg-indigo-50 px-2 py-0.5 rounded-full">{task.time}</span>
+                                                </div>
                                             </th>
                                         ))}
-                                        <th className="p-4 border-b font-bold text-slate-600 text-xs uppercase text-center">Score</th>
+                                        <th className="p-3 border-b font-bold text-slate-600 text-xs uppercase text-center min-w-[100px]">Score / Action</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -327,18 +341,20 @@ const App = () => {
                                                         isWeekend ? 'bg-amber-50/20' : 'hover:bg-slate-50'
                                                     }`}
                                             >
-                                                <td className="p-4 font-bold text-slate-500 text-sm">
-                                                    {date.getDate()} {date.toLocaleDateString('default', { weekday: 'short' })}
-                                                    {isToday && <span className="ml-2 text-xs text-indigo-600">(Today)</span>}
+                                                <td className="p-3 font-bold text-slate-500 text-sm whitespace-nowrap">
+                                                    <div className="flex flex-col">
+                                                        <span>{date.getDate()} {date.toLocaleDateString('default', { weekday: 'short' })}</span>
+                                                        {isToday && <span className="text-[10px] text-indigo-700 font-bold bg-indigo-100 px-1.5 py-0.5 rounded-full w-fit mt-1">TODAY</span>}
+                                                    </div>
                                                 </td>
                                                 {TASKS.map(task => (
                                                     <td key={task.id} className="p-2 text-center">
                                                         <button
                                                             disabled={isOutOfRange}
                                                             onClick={() => toggleTask(key, task.id)}
-                                                            className={`w-12 h-12 rounded-lg flex items-center justify-center transition-all shadow-sm border font-black text-lg mx-auto ${dayData[task.id] === 1
-                                                                ? 'bg-indigo-600 text-white border-indigo-700'
-                                                                : 'bg-white text-slate-300 border-slate-200 hover:border-slate-300'
+                                                            className={`w-10 h-10 rounded-lg flex items-center justify-center transition-all shadow-sm border font-bold text-base mx-auto ${dayData[task.id] === 1
+                                                                ? 'bg-indigo-600 text-white border-indigo-700 ring-2 ring-indigo-200 ring-offset-1'
+                                                                : 'bg-white text-slate-300 border-slate-200 hover:border-slate-300 hover:text-slate-400'
                                                                 }`}
                                                         >
                                                             {dayData[task.id] === 1 ? '1' : '0'}
@@ -346,13 +362,23 @@ const App = () => {
                                                     </td>
                                                 ))}
                                                 <td className="p-4 text-center">
-                                                    <div className={`text-sm font-black px-2 py-1 rounded inline-block ${score === maxPossibleDayScore
-                                                        ? 'bg-emerald-100 text-emerald-700'
-                                                        : score > 0
-                                                            ? 'bg-blue-100 text-blue-700'
-                                                            : 'bg-slate-100 text-slate-500'
-                                                        }`}>
-                                                        {score}
+                                                    <div className="flex flex-col items-center gap-2">
+                                                        <div className={`text-sm font-black px-2 py-1 rounded inline-block ${score === maxPossibleDayScore
+                                                            ? 'bg-emerald-100 text-emerald-700'
+                                                            : score > 0
+                                                                ? 'bg-blue-100 text-blue-700'
+                                                                : 'bg-slate-100 text-slate-500'
+                                                            }`}>
+                                                            {score}
+                                                        </div>
+                                                        {isToday && (
+                                                            <button
+                                                                onClick={() => handlePushClick(key)}
+                                                                className="text-[10px] font-bold text-white bg-slate-800 hover:bg-black px-2 py-1 rounded transition-colors shadow-sm"
+                                                            >
+                                                                PUSH
+                                                            </button>
+                                                        )}
                                                     </div>
                                                 </td>
                                             </tr>
@@ -456,6 +482,33 @@ const App = () => {
                     onClose={() => setShowPlanningModal(false)}
                     onSave={savePlan}
                 />
+            )}
+
+            {pushModal.show && (
+                <div className="fixed inset-0 bg-slate-900/50 flex items-center justify-center z-50 p-4">
+                    <div className="bg-white rounded-2xl shadow-2xl max-w-sm w-full p-6 animate-in zoom-in-95">
+                        <h3 className="text-xl font-bold text-slate-800 mb-2">Confirm Push</h3>
+                        <p className="text-slate-600 mb-6">
+                            This will create a tracking file for <strong>{pushModal.date}</strong> and trigger 5 commits to GitHub.
+                        </p>
+                        <div className="flex gap-3">
+                            <button
+                                onClick={() => setPushModal({ show: false, date: null })}
+                                className="flex-1 py-2 bg-slate-100 text-slate-700 font-bold rounded-lg hover:bg-slate-200"
+                                disabled={isPushing}
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={confirmPush}
+                                className="flex-1 py-2 bg-black text-white font-bold rounded-lg hover:bg-slate-800 flex justify-center"
+                                disabled={isPushing}
+                            >
+                                {isPushing ? 'Pushing...' : 'Confirm'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
             )}
         </div>
     );

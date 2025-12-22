@@ -1,4 +1,6 @@
 import simpleGit from 'simple-git';
+import fs from 'fs';
+import path from 'path';
 
 class GitManager {
     constructor(repoPath = './') {
@@ -29,6 +31,43 @@ class GitManager {
             }
         } catch (error) {
             console.error('Error initializing Git:', error.message);
+        }
+    }
+
+    /**
+     * Create daily progress file and 5 commits
+     */
+    async createDailyCommit(date, data) {
+        try {
+            // 1. Create tracking directory if it doesn't exist
+            const trackingDir = path.join(this.repoPath, 'tracking');
+            if (!fs.existsSync(trackingDir)) {
+                fs.mkdirSync(trackingDir, { recursive: true });
+            }
+
+            // 2. Create/Update the day's JSON file
+            const filePath = path.join(trackingDir, `${date}.json`);
+            fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
+
+            // 3. Stage and Commit the file (Commit #1)
+            await this.git.add(filePath);
+            await this.git.commit(`Update tracking data for ${date}`);
+
+            // 4. Create 4 more empty commits (Commits #2-5)
+            for (let i = 2; i <= 5; i++) {
+                const timestamp = new Date().toISOString();
+                await this.git.raw(['commit', '--allow-empty', '-m', `Progress sync #${i} for ${date} [${timestamp}]`]);
+            }
+
+            // 5. Push changes
+            await this.git.push();
+
+            console.log(`✅ 5 Commits created and pushed for ${date}`);
+            return { success: true, message: "5 commits created and pushed" };
+
+        } catch (error) {
+            console.error('Error in createDailyCommit:', error);
+            return { success: false, error: error.message };
         }
     }
 

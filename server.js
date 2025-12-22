@@ -36,6 +36,23 @@ app.post('/api/update', async (req, res) => {
 });
 
 /**
+ * Handle manual daily push
+ */
+app.post('/api/push-day', async (req, res) => {
+    try {
+        const { date, data } = req.body;
+
+        // Trigger 5-commit strategy
+        const result = await gitManager.createDailyCommit(date, data);
+
+        res.json(result);
+    } catch (error) {
+        console.error('Error in /api/push-day:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+/**
  * Get commit statistics
  */
 app.get('/api/stats', async (req, res) => {
