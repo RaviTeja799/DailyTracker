@@ -7,11 +7,11 @@ import {
 const APP_ID = 'daily-tracker-git';
 
 const TASKS = [
-    { id: 'dsa', label: 'DSA Practice', weight: 2, icon: BookOpen, color: 'text-blue-600' },
-    { id: 'college', label: 'College & Gateway', weight: 1, icon: BookOpen, color: 'text-slate-600' },
-    { id: 'dev', label: 'Development & GSoC', weight: 2, icon: GitCommit, color: 'text-indigo-600' },
-    { id: 'gate', label: 'GATE Core Study', weight: 2, icon: ShieldCheck, color: 'text-purple-600' },
-    { id: 'revision', label: 'Revision & Aptitude', weight: 1, icon: Clock, color: 'text-amber-600' },
+    { id: 'dsa', label: 'DSA Practice', weight: 2 },
+    { id: 'college', label: 'College & Gateway', weight: 1 },
+    { id: 'dev', label: 'Development & GSoC', weight: 2 },
+    { id: 'gate', label: 'GATE Core Study', weight: 2 },
+    { id: 'revision', label: 'Revision & Aptitude', weight: 1 },
 ];
 
 const TIPS = [
@@ -249,15 +249,14 @@ const App = () => {
                                         <th className="p-4 border-b font-bold text-slate-600 text-xs uppercase">Date</th>
                                         {TASKS.map(task => (
                                             <th key={task.id} className="p-4 border-b font-bold text-slate-600 text-xs uppercase text-center">
-                                                <th key={task.id} className="p-4 border-b font-bold text-slate-600 text-xs uppercase text-center">
-                                                    <div className="flex flex-col items-center gap-1">
-                                                        <span className="hidden md:inline">{task.label}</span>
-                                                        <span className="md:hidden">{task.id.toUpperCase().slice(0, 3)}</span>
-                                                    </div>
-                                                </th>
+                                                <div className="flex flex-col items-center gap-1">
+                                                    <span className="hidden md:inline">{task.label}</span>
+                                                    <span className="md:hidden">{task.id.toUpperCase().slice(0, 3)}</span>
+                                                </div>
+                                            </th>
                                         ))}
-                                                <th className="p-4 border-b font-bold text-slate-600 text-xs uppercase text-center">Score</th>
-                                            </tr>
+                                        <th className="p-4 border-b font-bold text-slate-600 text-xs uppercase text-center">Score</th>
+                                    </tr>
                                 </thead>
                                 <tbody>
                                     {monthDates.map(date => {
