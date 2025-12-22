@@ -13,8 +13,8 @@
       "category": "DSA",
       "type": "topic",
       "topic": "Arrays and Linked Lists",
-      "done": false,
-      "updatedAt": "2025-12-22T12:30:41.299Z"
+      "done": true,
+      "updatedAt": "2025-12-22T12:31:18.329Z"
     },
     {
       "id": "cybersecurity",
@@ -25,9 +25,9 @@
       "updatedAt": "2025-12-22T12:30:16.391Z"
     }
   ],
-  "commitCount": 2,
+  "commitCount": 3,
   "metadata": {
     "createdAt": "2025-12-22T12:30:16.391Z",
-    "lastUpdatedAt": "2025-12-22T12:30:41.301Z"
+    "lastUpdatedAt": "2025-12-22T12:31:18.330Z"
   }
 }
